@@ -1,0 +1,167 @@
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+
+    /* Sidebar adjustments */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s ease;
+    }
+
+    .sidebar.show {
+        left: 0;
+    }
+
+    /* Main content adjustments */
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    /* Mobile menu button */
+    .mobile-menu-btn {
+        display: block !important;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 1001;
+        background: #667eea;
+        border: none;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    /* Table responsiveness */
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+
+    .table td,
+    .table th {
+        padding: 0.5rem 0.25rem;
+    }
+
+    /* Card adjustments */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Form adjustments */
+    .form-control {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+    }
+
+    /* Button adjustments */
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    /* Dashboard stats */
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+
+    .stats-card .card-body {
+        text-align: center;
+        padding: 1.5rem 1rem;
+    }
+
+    /* Navigation improvements */
+    .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 1rem;
+    }
+
+    /* PWA install button */
+    #pwa-install-section {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: rgba(102, 126, 234, 0.95);
+        color: white;
+        padding: 0.5rem;
+        text-align: center;
+    }
+
+    /* Touch-friendly elements */
+    .btn,
+    .nav-link,
+    .dropdown-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Better spacing for mobile */
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    /* Hide desktop elements on mobile */
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        width: 250px;
+    }
+
+    .main-content {
+        padding: 0.5rem;
+    }
+}
+
+/* Large mobile devices */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 250px;
+    }
+
+    .main-content {
+        margin-left: 250px;
+    }
+
+    .mobile-menu-btn {
+        display: none !important;
+    }
+}
+
+/* PWA specific styles */
+@media (display-mode: standalone) {
+
+    /* Hide browser UI elements when app is installed */
+    .pwa-installed {
+        padding-top: 0;
+    }
+
+    /* Full screen experience */
+    body {
+        overflow: hidden;
+    }
+
+    .main-content {
+        height: 100vh;
+        overflow-y: auto;
+    }
+}
