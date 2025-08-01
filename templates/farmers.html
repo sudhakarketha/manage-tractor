@@ -51,10 +51,10 @@
                                 </td>
                                 <td>
                                     {% if farmer.email %}
-                                        <i class="fas fa-envelope me-1"></i>
-                                        {{ farmer.email }}
+                                    <i class="fas fa-envelope me-1"></i>
+                                    {{ farmer.email }}
                                     {% else %}
-                                        <span class="text-muted">No email</span>
+                                    <span class="text-muted">No email</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -65,11 +65,17 @@
                                     <span class="badge bg-info">{{ farmer.works|length }}</span>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('farmer_detail', farmer_id=farmer.id) }}"
-                                        class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye me-1"></i>
-                                        View
-                                    </a>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('farmer_detail', farmer_id=farmer.id) }}"
+                                            class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-farmer-btn"
+                                            data-farmer-name="{{ farmer.name }}" data-farmer-id="{{ farmer.id }}"
+                                            title="Delete Farmer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -91,4 +97,43 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteFarmerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete farmer "<span id="farmerNameToDelete"></span>"?</p>
+                <p class="text-danger"><strong>Warning:</strong> This will also delete all works associated with this
+                    farmer!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteFarmerForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Farmer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add event listeners to all delete farmer buttons
+        document.querySelectorAll('.delete-farmer-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const farmerName = this.getAttribute('data-farmer-name');
+                const farmerId = this.getAttribute('data-farmer-id');
+
+                document.getElementById('farmerNameToDelete').textContent = farmerName;
+                document.getElementById('deleteFarmerForm').action = '/farmers/' + farmerId + '/delete';
+                new bootstrap.Modal(document.getElementById('deleteFarmerModal')).show();
+            });
+        });
+    });
+</script>
 {% endblock %}

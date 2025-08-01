@@ -105,6 +105,20 @@ def farmer_detail(farmer_id):
     works = TractorWork.query.filter_by(farmer_id=farmer_id).order_by(TractorWork.date.desc()).all()
     return render_template('farmer_detail.html', farmer=farmer, works=works)
 
+@app.route('/farmers/<int:farmer_id>/delete', methods=['POST'])
+def delete_farmer(farmer_id):
+    farmer = Farmer.query.get_or_404(farmer_id)
+    
+    # Delete all works associated with this farmer first
+    TractorWork.query.filter_by(farmer_id=farmer_id).delete()
+    
+    # Delete the farmer
+    db.session.delete(farmer)
+    db.session.commit()
+    
+    flash(f'Farmer "{farmer.name}" and all associated works have been deleted successfully!', 'success')
+    return redirect(url_for('farmers'))
+
 @app.route('/works')
 def works():
     works_list = TractorWork.query.order_by(TractorWork.date.desc()).all()
@@ -153,6 +167,17 @@ def update_work_status(work_id):
         work.status = new_status
         db.session.commit()
         flash('Work status updated successfully!', 'success')
+    return redirect(url_for('works'))
+
+@app.route('/works/<int:work_id>/delete', methods=['POST'])
+def delete_work(work_id):
+    work = TractorWork.query.get_or_404(work_id)
+    work_description = work.description[:30] + "..." if len(work.description) > 30 else work.description
+    
+    db.session.delete(work)
+    db.session.commit()
+    
+    flash(f'Work "{work_description}" has been deleted successfully!', 'success')
     return redirect(url_for('works'))
 
 @app.route('/reports')

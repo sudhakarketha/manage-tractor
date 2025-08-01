@@ -110,6 +110,16 @@
                                                     </button>
                                                 </form>
                                             </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button type="button" class="dropdown-item text-danger delete-work-btn"
+                                                    data-work-description="{{ work.description[:30] }}{% if work.description|length > 30 %}...{% endif %}"
+                                                    data-work-id="{{ work.id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </li>
                                         </ul>
                                     </div>
                                 </td>
@@ -133,4 +143,42 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteWorkModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete work "<span id="workDescriptionToDelete"></span>"?</p>
+                <p class="text-danger"><strong>Warning:</strong> This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteWorkForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Work</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add event listeners to all delete work buttons
+        document.querySelectorAll('.delete-work-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const workDescription = this.getAttribute('data-work-description');
+                const workId = this.getAttribute('data-work-id');
+
+                document.getElementById('workDescriptionToDelete').textContent = workDescription;
+                document.getElementById('deleteWorkForm').action = '/works/' + workId + '/delete';
+                new bootstrap.Modal(document.getElementById('deleteWorkModal')).show();
+            });
+        });
+    });
+</script>
 {% endblock %}
