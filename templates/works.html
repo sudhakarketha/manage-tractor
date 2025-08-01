@@ -27,7 +27,7 @@
             </div>
             <div class="card-body">
                 {% if works %}
-                <div class="table-responsive">
+                <div class="table-responsive table-container">
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
@@ -74,22 +74,13 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                            id="dropdownMenu{{ work.id }}" data-bs-toggle="dropdown"
+                                            aria-expanded="false">
                                             Actions
                                         </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <form method="POST"
-                                                    action="{{ url_for('update_work_status', work_id=work.id) }}"
-                                                    style="display: inline;">
-                                                    <input type="hidden" name="status" value="Pending">
-                                                    <button type="submit" class="dropdown-item">
-                                                        <i class="fas fa-clock me-2"></i>Mark as Pending
-                                                    </button>
-                                                </form>
-                                            </li>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ work.id }}">
                                             <li>
                                                 <form method="POST"
                                                     action="{{ url_for('update_work_status', work_id=work.id) }}"
@@ -178,6 +169,67 @@
                 document.getElementById('deleteWorkForm').action = '/works/' + workId + '/delete';
                 new bootstrap.Modal(document.getElementById('deleteWorkModal')).show();
             });
+        });
+
+        // Fix dropdown positioning for tables with few rows
+        document.querySelectorAll('.dropdown-toggle').forEach(function (dropdownToggle) {
+            dropdownToggle.addEventListener('click', function (e) {
+                // Ensure the dropdown container is properly positioned
+                const dropdown = this.closest('.dropdown');
+                if (dropdown) {
+                    dropdown.style.position = 'relative';
+                }
+
+                // Force dropdown menu to be visible
+                const dropdownMenu = this.nextElementSibling;
+                if (dropdownMenu && dropdownMenu.classList.contains('dropdown-menu')) {
+                    setTimeout(function () {
+                        dropdownMenu.style.display = 'block';
+                        dropdownMenu.style.visibility = 'visible';
+                        dropdownMenu.style.opacity = '1';
+                    }, 10);
+                }
+            });
+        });
+
+        // Handle dropdown closing without affecting table layout
+        document.addEventListener('click', function (e) {
+            const clickedElement = e.target;
+            const isDropdownToggle = clickedElement.closest('.dropdown-toggle');
+            const isDropdownMenu = clickedElement.closest('.dropdown-menu');
+            const isDropdown = clickedElement.closest('.dropdown');
+
+            // If clicked outside any dropdown
+            if (!isDropdown) {
+                // Close all open dropdowns
+                document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                    menu.classList.remove('show');
+                    menu.style.display = 'none';
+                    menu.style.visibility = 'hidden';
+                    menu.style.opacity = '0';
+                });
+
+                // Reset all dropdown toggle states
+                document.querySelectorAll('.dropdown-toggle').forEach(function (toggle) {
+                    toggle.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+
+        // Also handle ESC key to close dropdowns
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                    menu.classList.remove('show');
+                    menu.style.display = 'none';
+                    menu.style.visibility = 'hidden';
+                    menu.style.opacity = '0';
+                });
+
+                document.querySelectorAll('.dropdown-toggle').forEach(function (toggle) {
+                    toggle.setAttribute('aria-expanded', 'false');
+                });
+            }
         });
     });
 </script>

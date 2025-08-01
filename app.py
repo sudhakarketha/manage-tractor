@@ -69,6 +69,9 @@ def index():
     pending_works = TractorWork.query.filter_by(status='Pending').count()
     completed_works = TractorWork.query.filter_by(status='Completed').count()
     
+    # Count farmers who have at least one paid work
+    paid_farmers = db.session.query(Farmer).join(TractorWork).filter(TractorWork.status == 'Paid').distinct().count()
+    
     recent_works = TractorWork.query.order_by(TractorWork.created_at.desc()).limit(5).all()
     
     return render_template('index.html', 
@@ -76,6 +79,7 @@ def index():
                          total_works=total_works,
                          pending_works=pending_works,
                          completed_works=completed_works,
+                         paid_farmers=paid_farmers,
                          recent_works=recent_works)
 
 @app.route('/farmers')
@@ -87,10 +91,13 @@ def farmers():
 def add_farmer():
     form = FarmerForm()
     if form.validate_on_submit():
+        # Convert empty email to None to avoid unique constraint issues
+        email = form.email.data.strip() if form.email.data else None
+        
         farmer = Farmer(
             name=form.name.data,
             phone=form.phone.data,
-            email=form.email.data,
+            email=email,
             address=form.address.data
         )
         db.session.add(farmer)
