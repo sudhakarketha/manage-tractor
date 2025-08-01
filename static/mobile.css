@@ -46,6 +46,17 @@
         padding: 0.5rem 0.25rem;
     }
 
+    /* Mobile table optimizations */
+    .table .d-none {
+        display: none !important;
+    }
+
+    /* Ensure important columns are visible on mobile */
+    .table th:not(.d-none),
+    .table td:not(.d-none) {
+        display: table-cell !important;
+    }
+
     /* Card adjustments */
     .card {
         margin-bottom: 1rem;

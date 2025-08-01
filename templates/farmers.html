@@ -32,9 +32,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Name</th>
-                                <th>Phone</th>
-                                <th>Email</th>
-                                <th>Address</th>
+                                <th class="d-none d-md-table-cell">Phone</th>
+                                <th class="d-none d-md-table-cell">Email</th>
+                                <th class="d-none d-md-table-cell">Address</th>
                                 <th>Total Works</th>
                                 <th>Actions</th>
                             </tr>
@@ -45,11 +45,11 @@
                                 <td>
                                     <strong>{{ farmer.name }}</strong>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <i class="fas fa-phone me-1"></i>
                                     {{ farmer.phone }}
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     {% if farmer.email %}
                                     <i class="fas fa-envelope me-1"></i>
                                     {{ farmer.email }}
@@ -57,7 +57,7 @@
                                     <span class="text-muted">No email</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <small class="text-muted">{{ farmer.address[:50] }}{% if farmer.address|length > 50
                                         %}...{% endif %}</small>
                                 </td>

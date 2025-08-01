@@ -33,10 +33,10 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Farmer</th>
-                                <th>Work Type</th>
-                                <th>Description</th>
+                                <th class="d-none d-md-table-cell">Work Type</th>
+                                <th class="d-none d-lg-table-cell">Description</th>
                                 <th>Quantity</th>
-                                <th>Rate/Unit</th>
+                                <th class="d-none d-md-table-cell">Rate/Unit</th>
                                 <th>Total Amount</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -52,15 +52,15 @@
                                         <strong>{{ work.farmer.name }}</strong>
                                     </a>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge bg-info">{{ work.work_type.title() }}</span>
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     <small>{{ work.description[:50] }}{% if work.description|length > 50 %}...{% endif
                                         %}</small>
                                 </td>
                                 <td>{{ work.quantity }} {{ work.unit_type }}</td>
-                                <td>₹{{ "%.2f"|format(work.rate_per_unit) }}</td>
+                                <td class="d-none d-md-table-cell">₹{{ "%.2f"|format(work.rate_per_unit) }}</td>
                                 <td>
                                     <strong>₹{{ "%.2f"|format(work.total_amount) }}</strong>
                                 </td>
