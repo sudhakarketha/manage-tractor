@@ -135,11 +135,23 @@ def delete_farmer(farmer_id):
 
 @app.route('/works')
 def works():
+    # Check if there are any farmers in the database
+    farmers_count = Farmer.query.count()
+    if farmers_count == 0:
+        flash('No farmers found! Please add at least one farmer before viewing work entries.', 'warning')
+        return redirect(url_for('add_farmer'))
+    
     works_list = TractorWork.query.order_by(TractorWork.date.desc()).all()
     return render_template('works.html', works=works_list)
 
 @app.route('/works/add', methods=['GET', 'POST'])
 def add_work():
+    # Check if there are any farmers in the database
+    farmers_count = Farmer.query.count()
+    if farmers_count == 0:
+        flash('No farmers found! Please add at least one farmer before creating work entries.', 'warning')
+        return redirect(url_for('add_farmer'))
+    
     form = TractorWorkForm()
     form.farmer_id.choices = [(f.id, f.name) for f in Farmer.query.order_by(Farmer.name).all()]
     
@@ -196,6 +208,12 @@ def delete_work(work_id):
 
 @app.route('/reports')
 def reports():
+    # Check if there are any farmers in the database
+    farmers_count = Farmer.query.count()
+    if farmers_count == 0:
+        flash('No farmers found! Please add at least one farmer before viewing reports.', 'warning')
+        return redirect(url_for('add_farmer'))
+    
     # Get statistics for reports
     total_revenue = db.session.query(db.func.sum(TractorWork.total_amount)).scalar() or 0
     works_by_type = db.session.query(
@@ -215,6 +233,11 @@ def reports():
 
 @app.route('/api/works')
 def api_works():
+    # Check if there are any farmers in the database
+    farmers_count = Farmer.query.count()
+    if farmers_count == 0:
+        return jsonify({'error': 'No farmers found! Please add at least one farmer first.'}), 400
+    
     works = TractorWork.query.all()
     return jsonify([{
         'id': work.id,
