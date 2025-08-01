@@ -8,10 +8,29 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+
+# Ensure the instance folder exists
+if not os.path.exists('instance'):
+    os.makedirs('instance')
+
+# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tractor_management.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# Ensure database is initialized
+def ensure_database():
+    """Ensure database tables exist"""
+    with app.app_context():
+        try:
+            db.create_all()
+            print(f"✅ Database ready at: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        except Exception as e:
+            print(f"❌ Database initialization error: {e}")
+
+# Initialize database on import
+ensure_database()
 
 # Database Models
 class Farmer(db.Model):
@@ -264,7 +283,13 @@ def api_works():
         'farmer_name': work.farmer.name
     } for work in works])
 
-if __name__ == '__main__':
+def init_database():
+    """Initialize the database with tables"""
     with app.app_context():
         db.create_all()
+        print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        print(f"Database file location: {os.path.abspath('instance/tractor_management.db')}")
+
+if __name__ == '__main__':
+    init_database()
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000))) 
