@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, DateField, DecimalField, SubmitField
-from wtforms.validators import DataRequired, Email, Optional
+from wtforms.validators import DataRequired, Email, Optional, ValidationError
 from datetime import datetime
 import os
 
@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 # Database Models
 class Farmer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
     phone = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=True)
     address = db.Column(db.Text, nullable=False)
@@ -36,9 +36,16 @@ class TractorWork(db.Model):
     farmer_id = db.Column(db.Integer, db.ForeignKey('farmer.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Custom validator for unique farmer names
+def validate_unique_farmer_name(form, field):
+    # Check if a farmer with this name already exists
+    existing_farmer = Farmer.query.filter_by(name=field.data.strip()).first()
+    if existing_farmer:
+        raise ValidationError('A farmer with this name already exists. Please choose a different name.')
+
 # Forms
 class FarmerForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
+    name = StringField('Name', validators=[DataRequired(), validate_unique_farmer_name])
     phone = StringField('Phone', validators=[DataRequired()])
     email = StringField('Email', validators=[Optional(), Email()])
     address = TextAreaField('Address', validators=[DataRequired()])
