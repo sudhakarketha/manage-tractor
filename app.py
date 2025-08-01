@@ -46,9 +46,9 @@ def validate_unique_farmer_name(form, field):
 # Forms
 class FarmerForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), validate_unique_farmer_name])
-    phone = StringField('Phone', validators=[DataRequired()])
+    phone = StringField('Phone', validators=[Optional()])
     email = StringField('Email', validators=[Optional(), Email()])
-    address = TextAreaField('Address', validators=[DataRequired()])
+    address = TextAreaField('Address', validators=[Optional()])
     submit = SubmitField('Add Farmer')
 
 class TractorWorkForm(FlaskForm):
@@ -98,19 +98,31 @@ def farmers():
 def add_farmer():
     form = FarmerForm()
     if form.validate_on_submit():
-        # Convert empty email to None to avoid unique constraint issues
-        email = form.email.data.strip() if form.email.data else None
-        
-        farmer = Farmer(
-            name=form.name.data,
-            phone=form.phone.data,
-            email=email,
-            address=form.address.data
-        )
-        db.session.add(farmer)
-        db.session.commit()
-        flash('Farmer added successfully!', 'success')
-        return redirect(url_for('farmers'))
+        try:
+            # Convert empty fields to None to avoid constraint issues
+            email = form.email.data.strip() if form.email.data else None
+            phone = form.phone.data.strip() if form.phone.data else None
+            address = form.address.data.strip() if form.address.data else None
+            
+            farmer = Farmer(
+                name=form.name.data,
+                phone=phone,
+                email=email,
+                address=address
+            )
+            db.session.add(farmer)
+            db.session.commit()
+            flash('Farmer added successfully!', 'success')
+            return redirect(url_for('farmers'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding farmer: {str(e)}', 'error')
+            print(f"Error adding farmer: {e}")
+    else:
+        # Show form validation errors
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{getattr(form, field).label.text}: {error}', 'error')
     return render_template('add_farmer.html', form=form)
 
 @app.route('/farmers/<int:farmer_id>')
