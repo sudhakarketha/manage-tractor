@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Tractor Management System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-3">
+            <i class="fas fa-chart-bar me-2"></i>
+            Reports & Analytics
+        </h2>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+                <h3 class="mb-1">₹{{ "%.2f"|format(total_revenue) }}</h3>
+                <p class="mb-0">Total Revenue</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <h3 class="mb-1">{{ works_by_type|sum(attribute='1') }}</h3>
+                <p class="mb-0">Total Works</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Works by Type
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="workTypeChart" width="400" height="200"
+                    data-labels="{{ works_by_type|map(attribute=0)|map('title')|list|tojson }}"
+                    data-counts="{{ works_by_type|map(attribute=1)|list|tojson }}"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-doughnut me-2"></i>
+                    Works by Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="workStatusChart" width="400" height="200"
+                    data-labels="{{ works_by_status|map(attribute=0)|list|tojson }}"
+                    data-counts="{{ works_by_status|map(attribute=1)|list|tojson }}"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Works by Type Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if works_by_type %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Work Type</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work_type, count in works_by_type %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-info">{{ work_type.title() }}</span>
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / works_by_type|sum(attribute='1')) * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted">No data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Works by Status Breakdown
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if works_by_status %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status, count in works_by_status %}
+                            <tr>
+                                <td>
+                                    {% if status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Paid</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / works_by_status|sum(attribute='1')) * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted">No data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Work Type Chart
+    const workTypeCanvas = document.getElementById('workTypeChart');
+    const workTypeCtx = workTypeCanvas.getContext('2d');
+    const workTypeLabels = JSON.parse(workTypeCanvas.dataset.labels);
+    const workTypeCounts = JSON.parse(workTypeCanvas.dataset.counts);
+
+    const workTypeData = {
+        labels: workTypeLabels,
+        datasets: [{
+            data: workTypeCounts,
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40'
+            ]
+        }]
+    };
+
+    new Chart(workTypeCtx, {
+        type: 'pie',
+        data: workTypeData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Work Status Chart
+    const workStatusCanvas = document.getElementById('workStatusChart');
+    const workStatusCtx = workStatusCanvas.getContext('2d');
+    const workStatusLabels = JSON.parse(workStatusCanvas.dataset.labels);
+    const workStatusCounts = JSON.parse(workStatusCanvas.dataset.counts);
+
+    const workStatusData = {
+        labels: workStatusLabels,
+        datasets: [{
+            data: workStatusCounts,
+            backgroundColor: [
+                '#FFC107',
+                '#28A745',
+                '#007BFF'
+            ]
+        }]
+    };
+
+    new Chart(workStatusCtx, {
+        type: 'doughnut',
+        data: workStatusData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

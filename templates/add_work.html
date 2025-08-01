@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Add Work - Tractor Management System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="mb-3">
+            <i class="fas fa-plus me-2"></i>
+            Add New Work
+        </h2>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tractor me-2"></i>
+                    Work Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.farmer_id.label(class="form-label") }}
+                        {{ form.farmer_id(class="form-select") }}
+                        {% if form.farmer_id.errors %}
+                        <div class="text-danger">
+                            {% for error in form.farmer_id.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.work_type.label(class="form-label") }}
+                        {{ form.work_type(class="form-select") }}
+                        {% if form.work_type.errors %}
+                        <div class="text-danger">
+                            {% for error in form.work_type.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows="3", placeholder="Describe the work details...")
+                        }}
+                        {% if form.description.errors %}
+                        <div class="text-danger">
+                            {% for error in form.description.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.date.label(class="form-label") }}
+                                {{ form.date(class="form-control", type="date") }}
+                                {% if form.date.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.date.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" id="quantity-label">Quantity</label>
+                                {{ form.quantity(class="form-control", placeholder="Enter quantity") }}
+                                {% if form.quantity.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.quantity.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" id="rate-label">Rate per Unit</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            {{ form.rate_per_unit(class="form-control", placeholder="Enter rate") }}
+                        </div>
+                        {% if form.rate_per_unit.errors %}
+                        <div class="text-danger">
+                            {% for error in form.rate_per_unit.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('works') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Works
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Work Type Information -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Work Types Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-cut text-success me-2"></i>
+                            <div>
+                                <strong>Harvesting</strong>
+                                <br><small class="text-muted">Crop harvesting operations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-truck text-primary me-2"></i>
+                            <div>
+                                <strong>Transport</strong>
+                                <br><small class="text-muted">Transportation of goods/materials</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-cog text-warning me-2"></i>
+                            <div>
+                                <strong>Rotor</strong>
+                                <br><small class="text-muted">Rotor tiller operations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shovel text-info me-2"></i>
+                            <div>
+                                <strong>Plough</strong>
+                                <br><small class="text-muted">Ploughing operations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-seedling text-success me-2"></i>
+                            <div>
+                                <strong>Seeding</strong>
+                                <br><small class="text-muted">Seeding operations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-tint text-primary me-2"></i>
+                            <div>
+                                <strong>Irrigation</strong>
+                                <br><small class="text-muted">Irrigation operations</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const workTypeSelect = document.getElementById('work_type');
+        const quantityLabel = document.getElementById('quantity-label');
+        const rateLabel = document.getElementById('rate-label');
+        const quantityInput = document.getElementById('quantity');
+        const rateInput = document.getElementById('rate_per_unit');
+
+        function updateLabels() {
+            const selectedWorkType = workTypeSelect.value;
+
+            switch (selectedWorkType) {
+                case 'rotor':
+                case 'harvesting':
+                case 'seeding':
+                case 'irrigation':
+                    quantityLabel.textContent = 'Hours Worked';
+                    rateLabel.textContent = 'Rate per Hour';
+                    quantityInput.placeholder = 'e.g., 8.5';
+                    rateInput.placeholder = 'e.g., 500.00';
+                    break;
+                case 'transport':
+                    quantityLabel.textContent = 'Number of Trips';
+                    rateLabel.textContent = 'Rate per Trip';
+                    quantityInput.placeholder = 'e.g., 5';
+                    rateInput.placeholder = 'e.g., 200.00';
+                    break;
+                case 'plough':
+                    quantityLabel.textContent = 'Acres';
+                    rateLabel.textContent = 'Rate per Acre';
+                    quantityInput.placeholder = 'e.g., 10.5';
+                    rateInput.placeholder = 'e.g., 300.00';
+                    break;
+                default:
+                    quantityLabel.textContent = 'Quantity';
+                    rateLabel.textContent = 'Rate per Unit';
+                    quantityInput.placeholder = 'Enter quantity';
+                    rateInput.placeholder = 'Enter rate';
+                    break;
+            }
+        }
+
+        // Update labels when page loads
+        updateLabels();
+
+        // Update labels when work type changes
+        workTypeSelect.addEventListener('change', updateLabels);
+    });
+</script>
+{% endblock %}

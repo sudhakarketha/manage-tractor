@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ farmer.name }} - Tractor Management System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+            <i class="fas fa-user me-2"></i>
+            {{ farmer.name }}
+        </h2>
+        <a href="{{ url_for('add_work') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Add Work for This Farmer
+        </a>
+    </div>
+</div>
+
+<!-- Farmer Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Contact Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Name:</strong>
+                    </div>
+                    <div class="col-8">
+                        {{ farmer.name }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Phone:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="fas fa-phone me-1"></i>
+                        {{ farmer.phone }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Email:</strong>
+                    </div>
+                    <div class="col-8">
+                        {% if farmer.email %}
+                        <i class="fas fa-envelope me-1"></i>
+                        {{ farmer.email }}
+                        {% else %}
+                        <span class="text-muted">No email provided</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <strong>Address:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ farmer.address }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <strong>Joined:</strong>
+                    </div>
+                    <div class="col-8">
+                        <i class="fas fa-calendar me-1"></i>
+                        {{ farmer.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Work Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h3 class="text-primary mb-1">{{ works|length }}</h3>
+                            <small class="text-muted">Total Works</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h3 class="text-success mb-1">
+                                ₹{{ "%.2f"|format(works|sum(attribute='total_amount')) }}
+                            </h3>
+                            <small class="text-muted">Total Revenue</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h3 class="text-warning mb-1">
+                                {{ works|selectattr('status', 'equalto', 'Pending')|list|length }}
+                            </h3>
+                            <small class="text-muted">Pending Works</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h3 class="text-info mb-1">
+                                {{ works|selectattr('status', 'equalto', 'Completed')|list|length }}
+                            </h3>
+                            <small class="text-muted">Completed Works</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Work History -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Work History
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if works %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Work Type</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Rate/Unit</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for work in works %}
+                            <tr>
+                                <td>{{ work.date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ work.work_type.title() }}</span>
+                                </td>
+                                <td>
+                                    <small>{{ work.description[:50] }}{% if work.description|length > 50 %}...{% endif
+                                        %}</small>
+                                </td>
+                                <td>{{ work.quantity }} {{ work.unit_type }}</td>
+                                <td>₹{{ "%.2f"|format(work.rate_per_unit) }}</td>
+                                <td>
+                                    <strong>₹{{ "%.2f"|format(work.total_amount) }}</strong>
+                                </td>
+                                <td>
+                                    {% if work.status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif work.status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge bg-primary">Paid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No works recorded for this farmer</h5>
+                    <p class="text-muted">Start by adding the first work for {{ farmer.name }}.</p>
+                    <a href="{{ url_for('add_work') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Add First Work
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <a href="{{ url_for('farmers') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to Farmers
+        </a>
+    </div>
+</div>
+{% endblock %}
