@@ -2,9 +2,7 @@ const CACHE_NAME = 'tractor-management-v1';
 const urlsToCache = [
     '/',
     '/static/css/bootstrap.min.css',
-    '/static/js/bootstrap.bundle.min.js',
-    '/static/icons/icon-192x192.png',
-    '/static/icons/icon-512x512.png'
+    '/static/js/bootstrap.bundle.min.js'
 ];
 
 // Install event

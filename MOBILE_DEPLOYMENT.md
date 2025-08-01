@@ -60,7 +60,7 @@ Your Tractor Management System is now a **Progressive Web App (PWA)** that can b
 - **Service Worker** - Caches resources for offline use
 - **Web App Manifest** - Defines app appearance and behavior
 - **Install prompt** - Automatic installation suggestion
-- **App icons** - Custom tractor-themed icons
+- **App icons** - Browser default icons (can be customized later)
 
 ### **Browser Support:**
 - ✅ **Chrome** (Android) - Full support
