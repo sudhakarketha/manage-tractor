@@ -19,7 +19,7 @@
     /* Main content adjustments */
     .main-content {
         margin-left: 0;
-        padding: 1rem;
+        padding: 0.5rem;
     }
 
     /* Mobile menu button */
@@ -38,12 +38,12 @@
 
     /* Table responsiveness */
     .table-responsive {
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 
     .table td,
     .table th {
-        padding: 0.5rem 0.25rem;
+        padding: 0.25rem 0.125rem;
     }
 
     /* Mobile table optimizations */
@@ -59,44 +59,45 @@
 
     /* Card adjustments */
     .card {
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     .card-body {
-        padding: 1rem;
+        padding: 0.5rem;
     }
 
     /* Form adjustments */
     .form-control {
-        font-size: 16px;
-        /* Prevents zoom on iOS */
+        font-size: 14px;
+        /* Smaller font size */
+        padding: 0.25rem 0.5rem;
     }
 
     /* Button adjustments */
     .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
 
     /* Dashboard stats */
     .stats-card {
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     .stats-card .card-body {
         text-align: center;
-        padding: 1.5rem 1rem;
+        padding: 1rem 0.5rem;
     }
 
     /* Navigation improvements */
     .nav-link {
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
     }
 
     /* Modal adjustments */
     .modal-dialog {
-        margin: 1rem;
+        margin: 0.5rem;
     }
 
     /* PWA install button */
@@ -116,14 +117,14 @@
     .btn,
     .nav-link,
     .dropdown-toggle {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: 36px;
+        min-width: 36px;
     }
 
     /* Better spacing for mobile */
     .container-fluid {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
     }
 
     /* Hide desktop elements on mobile */
