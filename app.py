@@ -283,6 +283,226 @@ def api_works():
         'farmer_name': work.farmer.name
     } for work in works])
 
+@app.route('/api/farmers')
+def api_farmers():
+    """Get all farmers"""
+    farmers = Farmer.query.all()
+    return jsonify([{
+        'id': farmer.id,
+        'name': farmer.name,
+        'phone': farmer.phone,
+        'email': farmer.email,
+        'address': farmer.address,
+        'created_at': farmer.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'total_works': len(farmer.works)
+    } for farmer in farmers])
+
+@app.route('/api/farmers', methods=['POST'])
+def api_add_farmer():
+    """Add a new farmer via API"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or 'name' not in data:
+            return jsonify({'error': 'Name is required'}), 400
+        
+        # Check if farmer with same name exists
+        existing_farmer = Farmer.query.filter_by(name=data['name'].strip()).first()
+        if existing_farmer:
+            return jsonify({'error': 'A farmer with this name already exists'}), 400
+        
+        # Create new farmer
+        farmer = Farmer(
+            name=data['name'].strip(),
+            phone=data.get('phone', '').strip() or None,
+            email=data.get('email', '').strip() or None,
+            address=data.get('address', '').strip() or None
+        )
+        
+        db.session.add(farmer)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Farmer added successfully',
+            'farmer': {
+                'id': farmer.id,
+                'name': farmer.name,
+                'phone': farmer.phone,
+                'email': farmer.email,
+                'address': farmer.address
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error adding farmer: {str(e)}'}), 500
+
+@app.route('/api/works', methods=['POST'])
+def api_add_work():
+    """Add a new work via API"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['work_type', 'description', 'date', 'quantity', 'rate_per_unit', 'farmer_id']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'{field} is required'}), 400
+        
+        # Check if farmer exists
+        farmer = Farmer.query.get(data['farmer_id'])
+        if not farmer:
+            return jsonify({'error': 'Farmer not found'}), 404
+        
+        # Determine unit type based on work type
+        unit_type_map = {
+            'rotor': 'hours',
+            'harvesting': 'hours',
+            'seeding': 'hours',
+            'irrigation': 'hours',
+            'transport': 'trips',
+            'plough': 'acres',
+            'other': 'units'
+        }
+        unit_type = unit_type_map.get(data['work_type'], 'units')
+        
+        # Calculate total amount
+        total_amount = float(data['quantity']) * float(data['rate_per_unit'])
+        
+        # Create new work
+        work = TractorWork(
+            work_type=data['work_type'],
+            description=data['description'],
+            date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+            quantity=float(data['quantity']),
+            rate_per_unit=float(data['rate_per_unit']),
+            unit_type=unit_type,
+            total_amount=total_amount,
+            farmer_id=data['farmer_id']
+        )
+        
+        db.session.add(work)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Work added successfully',
+            'work': {
+                'id': work.id,
+                'work_type': work.work_type,
+                'description': work.description,
+                'date': work.date.strftime('%Y-%m-%d'),
+                'quantity': work.quantity,
+                'rate_per_unit': work.rate_per_unit,
+                'unit_type': work.unit_type,
+                'total_amount': work.total_amount,
+                'status': work.status,
+                'farmer_name': work.farmer.name
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error adding work: {str(e)}'}), 500
+
+@app.route('/api/farmers/<int:farmer_id>', methods=['PUT'])
+def api_update_farmer(farmer_id):
+    """Update a farmer via API"""
+    try:
+        farmer = Farmer.query.get_or_404(farmer_id)
+        data = request.get_json()
+        
+        if 'name' in data:
+            # Check if new name conflicts with existing farmer
+            existing = Farmer.query.filter_by(name=data['name'].strip()).first()
+            if existing and existing.id != farmer_id:
+                return jsonify({'error': 'A farmer with this name already exists'}), 400
+            farmer.name = data['name'].strip()
+        
+        if 'phone' in data:
+            farmer.phone = data['phone'].strip() or None
+        if 'email' in data:
+            farmer.email = data['email'].strip() or None
+        if 'address' in data:
+            farmer.address = data['address'].strip() or None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Farmer updated successfully',
+            'farmer': {
+                'id': farmer.id,
+                'name': farmer.name,
+                'phone': farmer.phone,
+                'email': farmer.email,
+                'address': farmer.address
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error updating farmer: {str(e)}'}), 500
+
+@app.route('/api/farmers/<int:farmer_id>', methods=['DELETE'])
+def api_delete_farmer(farmer_id):
+    """Delete a farmer via API"""
+    try:
+        farmer = Farmer.query.get_or_404(farmer_id)
+        
+        # Delete all works associated with this farmer first
+        TractorWork.query.filter_by(farmer_id=farmer_id).delete()
+        
+        # Delete the farmer
+        db.session.delete(farmer)
+        db.session.commit()
+        
+        return jsonify({'message': f'Farmer "{farmer.name}" and all associated works deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error deleting farmer: {str(e)}'}), 500
+
+@app.route('/api/works/<int:work_id>', methods=['PUT'])
+def api_update_work(work_id):
+    """Update work status via API"""
+    try:
+        work = TractorWork.query.get_or_404(work_id)
+        data = request.get_json()
+        
+        if 'status' in data and data['status'] in ['Pending', 'Completed', 'Paid']:
+            work.status = data['status']
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Work status updated successfully',
+                'work': {
+                    'id': work.id,
+                    'status': work.status
+                }
+            })
+        else:
+            return jsonify({'error': 'Invalid status. Must be Pending, Completed, or Paid'}), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error updating work: {str(e)}'}), 500
+
+@app.route('/api/works/<int:work_id>', methods=['DELETE'])
+def api_delete_work(work_id):
+    """Delete a work via API"""
+    try:
+        work = TractorWork.query.get_or_404(work_id)
+        work_description = work.description[:30] + "..." if len(work.description) > 30 else work.description
+        
+        db.session.delete(work)
+        db.session.commit()
+        
+        return jsonify({'message': f'Work "{work_description}" deleted successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error deleting work: {str(e)}'}), 500
+
 def init_database():
     """Initialize the database with tables"""
     with app.app_context():
