@@ -561,26 +561,61 @@ def test_db():
             'environment': os.environ.get('FLASK_ENV', 'development')
         }), 500
 
-def init_database():
-    """Initialize the database with tables"""
-    with app.app_context():
-        db.create_all()
-        print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
-        
-        # Test database connection after models are defined
-        try:
+@app.route('/create-tables')
+def create_tables():
+    """Manually create database tables"""
+    try:
+        with app.app_context():
+            db.create_all()
             farmer_count = Farmer.query.count()
             work_count = TractorWork.query.count()
-            print(f"✅ Database test successful - {farmer_count} farmers, {work_count} works")
-        except Exception as e:
-            print(f"⚠️  Database test failed: {e}")
-        
-        # Show database info
-        db_url = app.config['SQLALCHEMY_DATABASE_URI']
-        if 'mysql' in db_url.lower():
-            print(f"🌐 MySQL database configured")
-        else:
-            print(f"💻 SQLite database: {os.path.abspath('tractor_management.db')}")
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Database tables created successfully',
+                'farmer_count': farmer_count,
+                'work_count': work_count,
+                'database_url': app.config['SQLALCHEMY_DATABASE_URI']
+            })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Error creating tables: {str(e)}',
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI']
+        }), 500
+
+def init_database():
+    """Initialize the database with tables"""
+    try:
+        with app.app_context():
+            print(f"🔧 Initializing database at: {app.config['SQLALCHEMY_DATABASE_URI']}")
+            
+            # Create all tables
+            db.create_all()
+            print("✅ Database tables created successfully!")
+            
+            # Test database connection after models are defined
+            try:
+                farmer_count = Farmer.query.count()
+                work_count = TractorWork.query.count()
+                print(f"✅ Database test successful - {farmer_count} farmers, {work_count} works")
+            except Exception as e:
+                print(f"⚠️  Database test failed: {e}")
+                print("🔄 Attempting to recreate tables...")
+                db.drop_all()
+                db.create_all()
+                print("✅ Tables recreated successfully!")
+            
+            # Show database info
+            db_url = app.config['SQLALCHEMY_DATABASE_URI']
+            if 'mysql' in db_url.lower():
+                print(f"🌐 MySQL database configured")
+            else:
+                print(f"💻 SQLite database: {os.path.abspath('tractor_management.db')}")
+                
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
+        print("⚠️  Application will continue but database features may not work")
 
 if __name__ == '__main__':
     init_database()
