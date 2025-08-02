@@ -100,23 +100,40 @@ class TractorWorkForm(FlaskForm):
 # Routes
 @app.route('/')
 def index():
-    total_farmers = Farmer.query.count()
-    total_works = TractorWork.query.count()
-    pending_works = TractorWork.query.filter_by(status='Pending').count()
-    completed_works = TractorWork.query.filter_by(status='Completed').count()
-    
-    # Count farmers who have at least one paid work
-    paid_farmers = db.session.query(Farmer).join(TractorWork).filter(TractorWork.status == 'Paid').distinct().count()
-    
-    recent_works = TractorWork.query.order_by(TractorWork.created_at.desc()).limit(5).all()
-    
-    return render_template('index.html', 
-                         total_farmers=total_farmers,
-                         total_works=total_works,
-                         pending_works=pending_works,
-                         completed_works=completed_works,
-                         paid_farmers=paid_farmers,
-                         recent_works=recent_works)
+    try:
+        # Try to create tables if they don't exist
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"⚠️  Table creation warning: {e}")
+        
+        total_farmers = Farmer.query.count()
+        total_works = TractorWork.query.count()
+        pending_works = TractorWork.query.filter_by(status='Pending').count()
+        completed_works = TractorWork.query.filter_by(status='Completed').count()
+        
+        # Count farmers who have at least one paid work
+        paid_farmers = db.session.query(Farmer).join(TractorWork).filter(TractorWork.status == 'Paid').distinct().count()
+        
+        recent_works = TractorWork.query.order_by(TractorWork.created_at.desc()).limit(5).all()
+        
+        return render_template('index.html', 
+                             total_farmers=total_farmers,
+                             total_works=total_works,
+                             pending_works=pending_works,
+                             completed_works=completed_works,
+                             paid_farmers=paid_farmers,
+                             recent_works=recent_works)
+    except Exception as e:
+        print(f"❌ Error in index route: {e}")
+        # Return empty dashboard if database error
+        return render_template('index.html', 
+                             total_farmers=0,
+                             total_works=0,
+                             pending_works=0,
+                             completed_works=0,
+                             paid_farmers=0,
+                             recent_works=[])
 
 @app.route('/farmers')
 def farmers():
@@ -619,4 +636,25 @@ def init_database():
 
 if __name__ == '__main__':
     init_database()
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000))) 
+    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
+# Ensure database is initialized when app starts (for production)
+def ensure_database_tables():
+    """Ensure database tables exist before first request"""
+    try:
+        with app.app_context():
+            # Check if tables exist by trying to query them
+            try:
+                Farmer.query.first()
+                TractorWork.query.first()
+                print("✅ Database tables already exist")
+            except Exception:
+                print("🔧 Creating database tables...")
+                db.create_all()
+                print("✅ Database tables created successfully!")
+    except Exception as e:
+        print(f"⚠️  Database initialization warning: {e}")
+        print("⚠️  Tables may need to be created manually via /create-tables")
+
+# Call this function when the app starts
+ensure_database_tables() 
