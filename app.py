@@ -13,8 +13,25 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 if not os.path.exists('instance'):
     os.makedirs('instance')
 
-# Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tractor_management.db')
+# Database configuration - Support both SQLite (local) and MySQL (deployment)
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# Get database URL from environment variable (Clever Cloud provides this)
+database_url = os.environ.get('MYSQL_ADDON_URI') or os.environ.get('DATABASE_URL')
+
+if database_url:
+    # Use MySQL for deployment
+    if database_url.startswith('mysql://'):
+        # Convert mysql:// to mysql+pymysql:// for SQLAlchemy
+        database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    print(f"🌐 Using MySQL database: {database_url}")
+else:
+    # Use SQLite for local development
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tractor_management.db'
+    print(f"💻 Using SQLite database: sqlite:///tractor_management.db")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -503,12 +520,74 @@ def api_delete_work(work_id):
         db.session.rollback()
         return jsonify({'error': f'Error deleting work: {str(e)}'}), 500
 
+@app.route('/test-db')
+def test_db():
+    """Test database connection and functionality"""
+    try:
+        farmer_count = Farmer.query.count()
+        work_count = TractorWork.query.count()
+        
+        # Determine database type
+        db_url = app.config['SQLALCHEMY_DATABASE_URI']
+        if 'mysql' in db_url.lower():
+            database_type = 'MySQL'
+            database_info = {
+                'type': 'MySQL',
+                'url': db_url,
+                'host': os.environ.get('MYSQL_ADDON_HOST', 'Unknown'),
+                'database': os.environ.get('MYSQL_ADDON_DB', 'Unknown')
+            }
+        else:
+            database_type = 'SQLite'
+            db_path = 'tractor_management.db'
+            db_exists = os.path.exists(db_path)
+            db_size = os.path.getsize(db_path) if db_exists else 0
+            database_info = {
+                'type': 'SQLite',
+                'url': db_url,
+                'file': db_path,
+                'exists': db_exists,
+                'size_bytes': db_size
+            }
+        
+        return jsonify({
+            'status': 'success',
+            'database_type': database_type,
+            'database_info': database_info,
+            'farmer_count': farmer_count,
+            'work_count': work_count,
+            'message': f'{database_type} database connection working',
+            'environment': os.environ.get('FLASK_ENV', 'development')
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'database_type': 'Unknown',
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'],
+            'error': str(e),
+            'environment': os.environ.get('FLASK_ENV', 'development')
+        }), 500
+
 def init_database():
     """Initialize the database with tables"""
     with app.app_context():
         db.create_all()
         print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
-        print(f"Database file location: {os.path.abspath('instance/tractor_management.db')}")
+        
+        # Test database connection after models are defined
+        try:
+            farmer_count = Farmer.query.count()
+            work_count = TractorWork.query.count()
+            print(f"✅ Database test successful - {farmer_count} farmers, {work_count} works")
+        except Exception as e:
+            print(f"⚠️  Database test failed: {e}")
+        
+        # Show database info
+        db_url = app.config['SQLALCHEMY_DATABASE_URI']
+        if 'mysql' in db_url.lower():
+            print(f"🌐 MySQL database configured")
+        else:
+            print(f"💻 SQLite database: {os.path.abspath('tractor_management.db')}")
 
 if __name__ == '__main__':
     init_database()
