@@ -13,23 +13,16 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 if not os.path.exists('instance'):
     os.makedirs('instance')
 
-# Database configuration - Support both SQLite (local) and MySQL (deployment)
-import pymysql
-pymysql.install_as_MySQLdb()
+# Database configuration - Support SQLite (local) and MySQL (Clever Cloud deployment)
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith('mysql://'):
+    # Convert mysql:// to mysql+pymysql:// for Clever Cloud
+    database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
 
-# Get database URL from environment variable (Clever Cloud provides this)
-database_url = os.environ.get('MYSQL_ADDON_URI') or os.environ.get('DATABASE_URL')
-
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///tractor_management.db'
 if database_url:
-    # Use MySQL for deployment
-    if database_url.startswith('mysql://'):
-        # Convert mysql:// to mysql+pymysql:// for SQLAlchemy
-        database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     print(f"🌐 Using MySQL database: {database_url}")
 else:
-    # Use SQLite for local development
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tractor_management.db'
     print(f"💻 Using SQLite database: sqlite:///tractor_management.db")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -534,8 +527,8 @@ def test_db():
             database_info = {
                 'type': 'MySQL',
                 'url': db_url,
-                'host': os.environ.get('MYSQL_ADDON_HOST', 'Unknown'),
-                'database': os.environ.get('MYSQL_ADDON_DB', 'Unknown')
+                'host': os.environ.get('DATABASE_HOST', 'Unknown'),
+                'database': os.environ.get('DATABASE_NAME', 'Unknown')
             }
         else:
             database_type = 'SQLite'
